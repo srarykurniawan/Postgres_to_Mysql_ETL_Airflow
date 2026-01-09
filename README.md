@@ -1,6 +1,5 @@
 # PostgreSQL to MySQL ETL Pipeline - Orchestrated with Airflow
 
-## Ringkasan Proyek
 Sebuah ETL Pipeline (Extract, Transform, Load) yang dibangun menggunakan Apache Airflow untuk memindahkan data dari PostgreSQL (source database) ke MySQL (data warehouse) secara otomatis, terjadwal, dan incremental. Pipeline ini mensimulasikan workflow Data Engineering production-ready dengan orkestrasi berbasis container.
 
 ## 🎯 Fitur Utama
