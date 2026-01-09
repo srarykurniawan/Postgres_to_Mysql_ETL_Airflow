@@ -1,153 +1,133 @@
-PostgreSQL to MySQL ETL Pipeline (Apache Airflow)
+# PostgreSQL to MySQL ETL Pipeline - Orchestrated with Apache Airflow
 
-📌 DESKRIPSI PROJECT
-Project ini bertujuan untuk membangun ETL (Extract, Transform, Load) pipeline menggunakan Apache Airflow untuk memindahkan data dari PostgreSQL (source) ke MySQL (data warehouse) secara terjadwal.
+## Ringkasan Proyek
+Sebuah ETL Pipeline (Extract, Transform, Load) yang dibangun menggunakan Apache Airflow untuk memindahkan data dari PostgreSQL (source database) ke MySQL (data warehouse) secara otomatis, terjadwal, dan incremental. Pipeline ini mensimulasikan workflow Data Engineering production-ready dengan orkestrasi berbasis container.
 
-Pipeline akan:
-
-1. Extract data terbaru dari PostgreSQL
-2. Transform data sesuai kebutuhan bisnis
-3. Load data ke MySQL dalam bentuk tabel dimensi dan fakta
-
-Pipeline dijalankan otomatis setiap 6 jam.
-
-🧱 ARSITEKTUR PIPELINE
-PostgreSQL (Source)
-   |
-   |  Extract (PythonOperator)
-   v
-Apache Airflow
-   |
-   |  Transform & Load (PythonOperator)
-   v
-MySQL (Data Warehouse)
-
-🛠️ TEKNOLOGI YANG DIGUNAKAN
-1. Apache Airflow
-2. PostgreSQL
-3. MySQL
-4. Docker & Docker Compose
-5. Python
-
-📂 STRUKTUR FOLDER
-postgres-to-mysql-etl/
-│
-├── airflow/
-│   ├── dags/
-│   │   └── postgres_to_mysql_etl.py   # File DAG utama
-│   ├── logs/
-│   └── plugins/
-│
-├── docker-compose.yml                 # Konfigurasi container
-├── README.md                          # Dokumentasi project
-
-🗄️ DATABASE & TABEL
-
-1️⃣ PostgreSQL (Source Database)
-
-Connection ID Airflow: postgres_source
-
-Schema: raw_data
-
-Tabel sumber:
-
-raw_data.customers
-raw_data.products
-raw_data.suppliers
-raw_data.orders
-
-Data yang diekstrak hanya data dengan: updated_at >= CURRENT_DATE - INTERVAL '1 day'
-
-2️⃣ MySQL (Data Warehouse)
-
-Connection ID Airflow: mysql_warehouse
-
-Tabel target:
-
-dim_customers
-dim_products
-fact_orders
-
-🔄 Alur ETL Pipeline
-1. EXTRACT
-Mengambil data dari PostgreSQL menggunakan PostgresHook:
-
-extract_customers
-extract_products
-extract_orders
-
-Hasil extract:
-Dikonversi menjadi list of dictionaries
-Disimpan ke XCom
-
-2. TRANSFORM
-Contoh transformasi:
-Format nomor telepon customer
-Mengubah state menjadi huruf besar
-Menghitung margin produk
-Validasi nilai negatif pada total order
-
-3. LOAD
-Memasukkan data ke MySQL menggunakan MySqlHook:
+## 🎯 Fitur Utama
+- 🔄 Ekstraksi Inkremental
+Hanya mengambil data yang berubah dalam 24 jam terakhir
+- 🧹 Transformasi Data
+Pembersihan, validasi, dan standardisasi data
+- ⚡ Load Optimal (Upsert)
 Menggunakan INSERT ... ON DUPLICATE KEY UPDATE
-Mendukung incremental load
+- ⏱️ Scheduling Otomatis
+Pipeline berjalan setiap 6 jam
+- 🐳 Containerized Environment
+Menggunakan Docker untuk kemudahan deployment
 
-⏱️ Jadwal DAG
-DAG dijalankan setiap 6 jam: schedule_interval=timedelta(hours=6)
+## 🏗️ Arsitektur Pipeline
+PostgreSQL (Source)  
+        ↓
+   Extract Task  
+        ↓
+    Apache Airflow  
+        ↓
+Transform & Load Task  
+        ↓
+ MySQL (Data Warehouse)  
 
-▶️ CARA MENJALANKAN PROJECT
-1️⃣ Jalankan Docker --> docker-compose up -d
+ ## 🛠️ Teknologi yang Digunakan
+ | Teknologi               | Versi | Fungsi                 |
+| ----------------------- | ----- | ---------------------- |
+| Apache Airflow          | 2.x+  | Workflow Orchestration |
+| PostgreSQL              | 14+   | Source Database        |
+| MySQL                   | 8.x   | Data Warehouse         |
+| Docker & Docker Compose | -     | Containerization       |
+| Python                  | 3.9+  | ETL Logic              |
 
-Pastikan container berikut RUNNING:
+## 📁 Struktur Proyek
+postgres-to-mysql-etl/  
+├── airflow/  
+│   ├── dags/  
+│   │   └── postgres_to_mysql_etl.py    # Main DAG file  
+│   ├── logs/  
+│   └── plugins/  
+├── docker-compose.yml                  # Container configuration  
+├── requirements.txt                    # Python dependencies  
+└── README.md                           # Project documentation  
 
-airflow_webserver
-airflow_scheduler
-postgres_source
-mysql_warehouse
+## 🗄️ Konfigurasi Database
+1️⃣ PostgreSQL (Source Database)  
+Airflow Connection ID: postgres_source  
+Schema: raw_data  
+Source Tables:  
+🔄 raw_data.customers  
+🔄 raw_data.products  
+🔄 raw_data.suppliers  
+🔄 raw_data.orders  
+Filter Ekstraksi (Incremental): updated_at >= CURRENT_DATE - INTERVAL '1 day' (sql)  
 
-2️⃣ Akses Airflow Web UI
-Buka browser: http://localhost:8080
+2️⃣ MySQL (Data Warehouse)  
+Airflow Connection ID: mysql_warehouse  
+Target Tables:  
+🔄 dim_customers (Dimensi)  
+🔄 dim_products (Dimensi)  
+🔄 fact_orders (Fakta)  
 
-Login (default):
-Username: airflow
-Password: airflow
+## 🔄 Alur ETL Pipeline
+1️⃣ EXTRACT
+Mengambil data dari PostgreSQL menggunakan PostgresHook:
+-extract_customers() → Data pelanggan  
+-extract_products() → Data produk  
+-extract_orders() → Data pesanan  
+📦 Output:  
+Data dikonversi menjadi list of dictionaries dan disimpan ke XCom  
 
-3️⃣ Aktifkan DAG
-Masuk ke halaman DAGs
-Aktifkan DAG postgres_to_mysql_etl
-Klik ▶️ Trigger DAG
+2️⃣ TRANSFORM  
+Contoh transformasi yang diterapkan:  
+📞 Format nomor telepon pelanggan  
+🔠 Konversi state menjadi UPPERCASE  
+💰 Perhitungan margin produk  
+❌ Validasi nilai negatif pada total order  
+📅 Standardisasi format tanggal  
 
-4️⃣ Monitoring
-Lihat status task (success / failed)
-Cek log jika terjadi error
-Pastikan data masuk ke MySQL
+3️⃣ LOAD  
+-Memasukkan data ke MySQL menggunakan MySqlHook:  
+-INSERT ... ON DUPLICATE KEY UPDATE  
+-Mendukung incremental load  
+-Penanganan error & retry logic  
 
-🔍 CARA VERIFIKASI DATA
-PostgreSQL
-- docker exec -it postgres_source psql -U postgres
-- SELECT * FROM raw_data.customers LIMIT 5;
+## ⏱️ Scheduling  
+DAG dijalankan setiap 6 jam: schedule_interval = timedelta(hours=6)  
 
-MySQL
-- docker exec -it mysql_warehouse mysql -u root -p
-- SELECT * FROM dim_customers LIMIT 5;
-- SELECT * FROM dim_products LIMIT 5;
-- SELECT * FROM fact_orders LIMIT 5;
+## 🚀 Cara Menjalankan Proyek  
+1️⃣ Clone dan setup project  
+-git clone <repository-url>  
+-cd postgres-to-mysql-etl  
+2️⃣ Jalankan Docker services  
+docker-compose up -d  
+3️⃣ Verifikasi container  
+docker-compose ps  
+4️⃣ Akses Airflow Web UI  
+🌐 URL: http://localhost:8080  
+🔐 Login:  
+-Username: airflow  
+-Password: airflow  
+5️⃣ Aktifkan & Trigger DAG  
+-Masuk ke halaman DAGs  
+-Cari DAG postgres_to_mysql_etl  
+-Aktifkan DAG (toggle ON)  
+Klik ▶️ Trigger DAG  
+6️⃣ Monitoring  
+📊 Pantau status task di Graph View  
+📄 Cek logs untuk troubleshooting  
+✅ Verifikasi data di database target  
 
-⚠️ CATATAN PENTING
-Pastikan Connection Airflow sudah dibuat:
-postgres_source
-mysql_warehouse
-Pastikan schema & tabel sudah ada sebelum DAG dijalankan
-DAG ini tidak menggunakan catchup
+## 🔍 Verifikasi Data  
+1️⃣ PostgreSQL (Source)  
+docker exec -it postgres_source psql -U postgres -d source_db  
+sql:  
+-SELECT * FROM raw_data.customers LIMIT 5;  
+-SELECT COUNT(*) FROM raw_data.orders;  
+2️⃣ MySQL (Data Warehouse)  
+docker exec -it mysql_warehouse mysql -u root -p  
+sql:  
+USE warehouse_db;  
+-SELECT * FROM dim_customers LIMIT 5;  
+-SELECT * FROM dim_products LIMIT 5;  
+-SELECT * FROM fact_orders LIMIT 5;  
 
-📌 KESIMPULAN
-Project ini mensimulasikan ETL production-ready menggunakan Apache Airflow dengan:
-- Modular task
-- Incremental load
-- Monitoring terpusat
-- Orkestrasi berbasis Docker
-
-####################################################################################################################
+########################################################################
 
 # PostgreSQL Initialization Scripts
 
