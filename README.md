@@ -64,12 +64,12 @@ Target Tables:
 🔄 fact_orders (Fakta)  
 
 ## 🔄 Alur ETL Pipeline
-1️⃣ EXTRACT
+1️⃣ EXTRACT  
 Mengambil data dari PostgreSQL menggunakan PostgresHook:
--extract_customers() → Data pelanggan  
--extract_products() → Data produk  
--extract_orders() → Data pesanan  
-📦 Output:  
+- extract_customers() → Data pelanggan  
+- extract_products() → Data produk  
+- extract_orders() → Data pesanan  
+  📦 Output:  
 Data dikonversi menjadi list of dictionaries dan disimpan ke XCom  
 
 2️⃣ TRANSFORM  
